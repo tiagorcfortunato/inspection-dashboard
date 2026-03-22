@@ -14,6 +14,10 @@ function clearToken()  { localStorage.removeItem('imToken'); }
 function getEmail()    { return localStorage.getItem('imEmail'); }
 function setEmail(e)   { localStorage.setItem('imEmail', e); }
 function clearEmail()  { localStorage.removeItem('imEmail'); }
+function getRole()     { return localStorage.getItem('imRole') || 'user'; }
+function setRole(r)    { localStorage.setItem('imRole', r); }
+function clearRole()   { localStorage.removeItem('imRole'); }
+function isAdmin()     { return getRole() === 'admin'; }
 
 // ── API ───────────────────────────────────────────────────────────────────────
 
@@ -133,6 +137,7 @@ async function handleRegister(e) {
 function logout() {
   clearToken();
   clearEmail();
+  clearRole();
   showAuth();
 }
 
@@ -143,13 +148,18 @@ function showAuth() {
   document.getElementById('dashboard-section').classList.add('hidden');
 }
 
-function showDashboard() {
+async function showDashboard() {
   document.getElementById('auth-section').classList.add('hidden');
   document.getElementById('dashboard-section').classList.remove('hidden');
 
-  const email = getEmail();
-  if (email) {
-    document.getElementById('header-user').textContent = email;
+  try {
+    const me = await apiFetch('/users/me');
+    setRole(me.role);
+    const label = me.role === 'admin' ? `${me.email} (Admin)` : me.email;
+    document.getElementById('header-user').textContent = label;
+  } catch {
+    const email = getEmail();
+    if (email) document.getElementById('header-user').textContent = email;
   }
 
   currentOffset = 0;
@@ -162,8 +172,9 @@ function showDashboard() {
 async function loadStats() {
   const statuses = ['reported', 'verified', 'scheduled', 'repaired'];
   try {
+    const endpoint = isAdmin() ? '/admin/inspections' : '/inspections';
     const results = await Promise.all(
-      statuses.map(s => apiFetch(`/inspections?status=${s}&limit=1`))
+      statuses.map(s => apiFetch(`${endpoint}?status=${s}&limit=1`))
     );
     const stats = statuses.map((s, i) => ({ status: s, count: results[i].total }));
     renderStats(stats);
@@ -237,8 +248,10 @@ async function loadInspections() {
   if (status)      qs += `&status=${status}`;
   if (damage_type) qs += `&damage_type=${damage_type}`;
 
+  const endpoint = isAdmin() ? '/admin/inspections' : '/inspections';
+
   try {
-    const data = await apiFetch(`/inspections${qs}`);
+    const data = await apiFetch(`${endpoint}${qs}`);
     clearTimeout(coldStartTimer);
     loading.classList.add('hidden');
 
