@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inspection Management</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- AUTH SECTION -->
+  <div id="auth-section" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="auth-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+          </svg>
+        </div>
+        <h1>Inspection Management</h1>
+        <p>Road infrastructure inspection tracker</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+        <button class="tab" id="tab-register" onclick="switchTab('register')">Register</button>
+      </div>
+
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" required placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <div id="auth-error" class="error-msg hidden"></div>
+        <button type="submit" class="btn btn-primary btn-full" id="login-btn">Sign In</button>
+      </form>
+
+      <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label for="reg-email">Email</label>
+          <input type="email" id="reg-email" required placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Password</label>
+          <input type="password" id="reg-password" required placeholder="••••••••" autocomplete="new-password" />
+        </div>
+        <div id="reg-error" class="error-msg hidden"></div>
+        <button type="submit" class="btn btn-primary btn-full" id="register-btn">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- DASHBOARD SECTION -->
+  <div id="dashboard-section" class="hidden">
+    <header class="header">
+      <div class="header-inner">
+        <div class="header-left">
+          <div class="header-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+            </svg>
+          </div>
+          <span class="header-title">Inspection Management</span>
+        </div>
+        <div class="header-right">
+          <span class="header-user" id="header-user"></span>
+          <button onclick="logout()" class="btn btn-outline btn-sm">Sign Out</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+
+      <!-- Stats -->
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card stat-skeleton"></div>
+        <div class="stat-card stat-skeleton"></div>
+        <div class="stat-card stat-skeleton"></div>
+        <div class="stat-card stat-skeleton"></div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <div class="filters">
+          <select id="filter-severity" onchange="applyFilters()">
+            <option value="">All Severities</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+          </select>
+          <select id="filter-status" onchange="applyFilters()">
+            <option value="">All Statuses</option>
+            <option value="reported">Reported</option>
+            <option value="verified">Verified</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="repaired">Repaired</option>
+          </select>
+          <select id="filter-damage" onchange="applyFilters()">
+            <option value="">All Damage Types</option>
+            <option value="pothole">Pothole</option>
+            <option value="crack">Crack</option>
+            <option value="rutting">Rutting</option>
+            <option value="surface_wear">Surface Wear</option>
+          </select>
+          <button onclick="clearFilters()" class="btn btn-ghost btn-sm">Clear</button>
+        </div>
+        <button onclick="openCreateModal()" class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Inspection
+        </button>
+      </div>
+
+      <!-- Table Card -->
+      <div class="card">
+        <div id="table-loading" class="state-message">
+          <div class="spinner"></div>
+          <span id="loading-text">Loading inspections...</span>
+        </div>
+        <div id="table-empty" class="state-message hidden">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <p>No inspections found.</p>
+          <button onclick="openCreateModal()" class="btn btn-primary btn-sm" style="margin-top:0.75rem">Create your first inspection</button>
+        </div>
+        <div id="table-wrapper" class="hidden">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Location</th>
+                <th class="hide-mobile">Damage Type</th>
+                <th>Severity</th>
+                <th>Status</th>
+                <th class="hide-tablet">Reported</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inspections-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- CREATE / EDIT MODAL -->
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="handleOverlayClick(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-title">New Inspection</h2>
+        <button onclick="closeModal()" class="modal-close" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form id="inspection-form" onsubmit="handleSubmit(event)">
+        <input type="hidden" id="inspection-id" />
+        <div class="form-group">
+          <label for="field-location">Location Code</label>
+          <input type="text" id="field-location" required placeholder="e.g. RD-042" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="field-damage">Damage Type</label>
+            <select id="field-damage" required>
+              <option value="pothole">Pothole</option>
+              <option value="crack">Crack</option>
+              <option value="rutting">Rutting</option>
+              <option value="surface_wear">Surface Wear</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="field-severity">Severity</label>
+            <select id="field-severity" required>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group hidden" id="status-group">
+          <label for="field-status">Status</label>
+          <select id="field-status">
+            <option value="reported">Reported</option>
+            <option value="verified">Verified</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="repaired">Repaired</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="field-notes">Notes <span class="label-optional">(optional)</span></label>
+          <textarea id="field-notes" rows="3" placeholder="Additional observations..."></textarea>
+        </div>
+        <div id="form-error" class="error-msg hidden"></div>
+        <div class="modal-actions">
+          <button type="button" onclick="closeModal()" class="btn btn-outline">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="submit-btn">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
