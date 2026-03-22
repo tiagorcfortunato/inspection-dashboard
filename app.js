@@ -45,6 +45,26 @@ async function apiFetch(path, options = {}) {
   return data;
 }
 
+async function apiLogin(email, password) {
+  const body = new URLSearchParams();
+  body.append('username', email);
+  body.append('password', password);
+
+  const res = await fetch(API_BASE + '/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.detail || 'Invalid credentials');
+  }
+
+  return data;
+}
+
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 function switchTab(tab) {
@@ -68,10 +88,7 @@ async function handleLogin(e) {
   btn.textContent = 'Signing in...';
 
   try {
-    const data = await apiFetch('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
+    const data = await apiLogin(email, password);
     setToken(data.access_token);
     setEmail(email);
     showDashboard();
@@ -100,10 +117,7 @@ async function handleRegister(e) {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
-    const data = await apiFetch('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
+    const data = await apiLogin(email, password);
     setToken(data.access_token);
     setEmail(email);
     showDashboard();
