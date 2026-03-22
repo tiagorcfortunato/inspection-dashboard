@@ -162,6 +162,10 @@ async function showDashboard() {
     if (email) document.getElementById('header-user').textContent = email;
   }
 
+  document.querySelectorAll('.admin-col').forEach(el => {
+    el.classList.toggle('hidden', !isAdmin());
+  });
+
   currentOffset = 0;
   loadStats();
   loadInspections();
@@ -279,6 +283,7 @@ function renderInspections(items) {
       <td><span class="badge severity-${item.severity}">${capitalize(item.severity)}</span></td>
       <td><span class="badge status-${item.status}">${capitalize(item.status)}</span></td>
       <td class="hide-tablet">${formatDate(item.reported_at)}</td>
+      <td class="hide-tablet admin-col ${isAdmin() ? '' : 'hidden'}">${item.user_email ? escapeHtml(item.user_email) : '-'}</td>
       <td class="td-actions">
         <button class="btn-icon-edit" onclick="openEditModal(${item.id})">Edit</button>
         <button class="btn-icon-delete" onclick="deleteInspection(${item.id})">Delete</button>
@@ -376,7 +381,8 @@ async function handleSubmit(e) {
     if (editMode) {
       const id = document.getElementById('inspection-id').value;
       payload.status = document.getElementById('field-status').value;
-      await apiFetch(`/inspections/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+      const updateEndpoint = isAdmin() ? `/admin/inspections/${id}` : `/inspections/${id}`;
+      await apiFetch(updateEndpoint, { method: 'PUT', body: JSON.stringify(payload) });
     } else {
       await apiFetch('/inspections', { method: 'POST', body: JSON.stringify(payload) });
     }
@@ -394,8 +400,9 @@ async function handleSubmit(e) {
 
 async function deleteInspection(id) {
   if (!confirm('Delete this inspection? This cannot be undone.')) return;
+  const deleteEndpoint = isAdmin() ? `/admin/inspections/${id}` : `/inspections/${id}`;
   try {
-    await apiFetch(`/inspections/${id}`, { method: 'DELETE' });
+    await apiFetch(deleteEndpoint, { method: 'DELETE' });
     loadStats();
     loadInspections();
   } catch (err) {
