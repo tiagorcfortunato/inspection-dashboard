@@ -71,6 +71,18 @@ async function apiLogin(email, password) {
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
 function checkPassword(value) {
   const rules = {
     'rule-length':  value.length >= 8,
@@ -201,6 +213,10 @@ async function loadStats() {
     );
     const stats = statuses.map((s, i) => ({ status: s, count: results[i].total }));
     renderStats(stats);
+    const total = stats.reduce((sum, s) => sum + s.count, 0);
+    const countEl = document.getElementById('header-count');
+    countEl.textContent = `${total} inspection${total !== 1 ? 's' : ''}`;
+    countEl.classList.remove('hidden');
   } catch {
     // silent — stats are non-critical
   }
@@ -402,8 +418,10 @@ async function handleSubmit(e) {
       payload.status = document.getElementById('field-status').value;
       const updateEndpoint = isAdmin() ? `/admin/inspections/${id}` : `/inspections/${id}`;
       await apiFetch(updateEndpoint, { method: 'PUT', body: JSON.stringify(payload) });
+      showToast('Inspection updated successfully');
     } else {
       await apiFetch('/inspections', { method: 'POST', body: JSON.stringify(payload) });
+      showToast('Inspection created successfully');
     }
     closeModal();
     loadStats();
@@ -422,10 +440,11 @@ async function deleteInspection(id) {
   const deleteEndpoint = isAdmin() ? `/admin/inspections/${id}` : `/inspections/${id}`;
   try {
     await apiFetch(deleteEndpoint, { method: 'DELETE' });
+    showToast('Inspection deleted');
     loadStats();
     loadInspections();
   } catch (err) {
-    alert(err.message || 'Failed to delete inspection.');
+    showToast(err.message || 'Failed to delete inspection.', 'error');
   }
 }
 
