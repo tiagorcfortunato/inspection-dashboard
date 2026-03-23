@@ -32,6 +32,41 @@ body {
 
 .hidden { display: none !important; }
 
+/* ── DEMO BOX ────────────────────────────── */
+
+.demo-box {
+  margin-top: 1.25rem;
+  padding: 0.875rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.demo-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  margin-bottom: 0.5rem;
+}
+
+.demo-credentials {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8125rem;
+  color: var(--text-2);
+  margin-bottom: 0.625rem;
+}
+
+.demo-credentials span {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  font-family: monospace;
+}
+
 /* ── AUTH ────────────────────────────────── */
 
 .auth-wrapper {

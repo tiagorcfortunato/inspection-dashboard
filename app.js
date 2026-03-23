@@ -71,6 +71,12 @@ async function apiLogin(email, password) {
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
+function fillDemo() {
+  switchTab('login');
+  document.getElementById('login-email').value = 'demo@inspection.com';
+  document.getElementById('login-password').value = 'demo1234';
+}
+
 function switchTab(tab) {
   document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
   document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
