@@ -55,7 +55,14 @@
         </div>
         <div class="form-group">
           <label for="reg-password">Password</label>
-          <input type="password" id="reg-password" required placeholder="••••••••" autocomplete="new-password" />
+          <input type="password" id="reg-password" required placeholder="••••••••" autocomplete="new-password" oninput="checkPassword(this.value)" />
+          <ul class="password-rules" id="password-rules">
+            <li id="rule-length">At least 8 characters</li>
+            <li id="rule-upper">One uppercase letter</li>
+            <li id="rule-lower">One lowercase letter</li>
+            <li id="rule-number">One number</li>
+            <li id="rule-special">One special character</li>
+          </ul>
         </div>
         <div id="reg-error" class="error-msg hidden"></div>
         <button type="submit" class="btn btn-primary btn-full" id="register-btn">Create Account</button>

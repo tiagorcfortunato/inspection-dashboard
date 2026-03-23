@@ -34,6 +34,43 @@ body {
 
 /* ── DEMO BOX ────────────────────────────── */
 
+/* ── PASSWORD RULES ──────────────────────── */
+
+.password-rules {
+  list-style: none;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.password-rules li {
+  font-size: 0.75rem;
+  color: var(--text-3);
+  padding-left: 1.25rem;
+  position: relative;
+  transition: color 0.15s;
+}
+
+.password-rules li::before {
+  content: '✗';
+  position: absolute;
+  left: 0;
+  color: var(--text-3);
+  transition: color 0.15s;
+}
+
+.password-rules li.valid {
+  color: #16a34a;
+}
+
+.password-rules li.valid::before {
+  content: '✓';
+  color: #16a34a;
+}
+
+/* ── DEMO BOX ────────────────────────────── */
+
 .demo-box {
   margin-top: 1.25rem;
   padding: 0.875rem 1rem;

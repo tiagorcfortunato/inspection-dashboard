@@ -71,6 +71,19 @@ async function apiLogin(email, password) {
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
+function checkPassword(value) {
+  const rules = {
+    'rule-length':  value.length >= 8,
+    'rule-upper':   /[A-Z]/.test(value),
+    'rule-lower':   /[a-z]/.test(value),
+    'rule-number':  /\d/.test(value),
+    'rule-special': /[^A-Za-z0-9]/.test(value),
+  };
+  for (const [id, valid] of Object.entries(rules)) {
+    document.getElementById(id).classList.toggle('valid', valid);
+  }
+}
+
 function fillDemo() {
   switchTab('login');
   document.getElementById('login-email').value = 'demo@inspection.com';
