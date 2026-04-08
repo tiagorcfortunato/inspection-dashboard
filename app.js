@@ -444,14 +444,25 @@ function removeImage() {
 async function getImageBase64() {
   const file = document.getElementById('field-image').files[0];
   if (!file) return null;
+
+  // Compress: resize to max 800px and convert to JPEG at 70% quality
   return new Promise(resolve => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      // Strip the data:image/...;base64, prefix — send raw base64 only
-      const base64 = e.target.result.split(',')[1];
-      resolve(base64);
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else       { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      resolve(dataUrl.split(',')[1]);
     };
-    reader.readAsDataURL(file);
+    img.src = URL.createObjectURL(file);
   });
 }
 
