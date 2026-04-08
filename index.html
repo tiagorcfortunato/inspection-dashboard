@@ -182,10 +182,10 @@
           <label for="field-location">Location Code</label>
           <input type="text" id="field-location" required placeholder="e.g. RD-042" />
         </div>
-        <div class="form-row">
+        <div class="form-row" id="manual-fields">
           <div class="form-group">
             <label for="field-damage">Damage Type</label>
-            <select id="field-damage" required>
+            <select id="field-damage">
               <option value="pothole">Pothole</option>
               <option value="crack">Crack</option>
               <option value="rutting">Rutting</option>
@@ -194,13 +194,17 @@
           </div>
           <div class="form-group">
             <label for="field-severity">Severity</label>
-            <select id="field-severity" required>
+            <select id="field-severity">
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>
               <option value="critical">Critical</option>
             </select>
           </div>
+        </div>
+        <div class="form-group" id="notes-group">
+          <label for="field-notes">Notes <span id="notes-label-hint" class="label-optional">(optional)</span></label>
+          <textarea id="field-notes" rows="3" placeholder="Additional observations..."></textarea>
         </div>
         <div class="form-group hidden" id="status-group">
           <label for="field-status">Status</label>
@@ -210,10 +214,6 @@
             <option value="scheduled">Scheduled</option>
             <option value="repaired">Repaired</option>
           </select>
-        </div>
-        <div class="form-group">
-          <label for="field-notes">Notes <span class="label-optional">(optional)</span></label>
-          <textarea id="field-notes" rows="3" placeholder="Additional observations..."></textarea>
         </div>
         <div id="form-error" class="error-msg hidden"></div>
         <div class="modal-actions">
