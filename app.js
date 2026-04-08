@@ -5,6 +5,45 @@ let currentOffset = 0;
 let editMode = false;
 let inspectionsCache = [];
 let coldStartTimer = null;
+const activePollers = {};
+
+function startAiPoller(inspectionId) {
+  if (activePollers[inspectionId]) return;
+
+  const INTERVAL_MS = 3000;
+  const TIMEOUT_MS  = 60000;
+  const startedAt   = Date.now();
+
+  activePollers[inspectionId] = setInterval(async () => {
+    if (Date.now() - startedAt > TIMEOUT_MS) {
+      clearInterval(activePollers[inspectionId]);
+      delete activePollers[inspectionId];
+      return;
+    }
+    try {
+      const inspection = await apiFetch(`/inspections/${inspectionId}`);
+      if (inspection.is_ai_processed) {
+        clearInterval(activePollers[inspectionId]);
+        delete activePollers[inspectionId];
+
+        const idx = inspectionsCache.findIndex(i => i.id === inspectionId);
+        if (idx !== -1) {
+          inspectionsCache[idx] = { ...inspectionsCache[idx], ...inspection };
+          renderInspections(inspectionsCache);
+          loadStats();
+        }
+      }
+    } catch {
+      clearInterval(activePollers[inspectionId]);
+      delete activePollers[inspectionId];
+    }
+  }, INTERVAL_MS);
+}
+
+function clearAllPollers() {
+  Object.values(activePollers).forEach(clearInterval);
+  Object.keys(activePollers).forEach(k => delete activePollers[k]);
+}
 
 // ── Storage ──────────────────────────────────────────────────────────────────
 
@@ -166,6 +205,7 @@ async function handleRegister(e) {
 }
 
 function logout() {
+  clearAllPollers();
   clearToken();
   clearEmail();
   clearRole();
@@ -433,8 +473,9 @@ async function handleSubmit(e) {
       await apiFetch(updateEndpoint, { method: 'PUT', body: JSON.stringify(payload) });
       showToast('Inspection updated successfully');
     } else {
-      await apiFetch('/inspections', { method: 'POST', body: JSON.stringify(payload) });
-      showToast('Inspection created successfully');
+      const created = await apiFetch('/inspections', { method: 'POST', body: JSON.stringify(payload) });
+      showToast('Inspection created — AI is analyzing...');
+      if (created && created.id) startAiPoller(created.id);
     }
     closeModal();
     loadStats();
