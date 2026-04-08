@@ -310,10 +310,14 @@ async function loadInspections() {
 
 function renderAiBadge(item) {
   if (item.is_ai_processed) {
-    const rationale = item.ai_rationale ? escapeHtml(item.ai_rationale) : 'AI classification complete';
-    return `<span class="badge ai-verified" title="${rationale}">&#x2705; AI Verified</span>`;
+    const rationale = item.ai_rationale ? escapeHtml(item.ai_rationale) : '';
+    return `
+      <div class="ai-verified-block">
+        <span class="badge ai-verified">&#x2705; AI Verified</span>
+        ${rationale ? `<p class="ai-rationale-text">${rationale}</p>` : ''}
+      </div>`;
   }
-  return `<span class="badge ai-processing" title="AI classification in progress">&#x2728; AI Analyzing...</span>`;
+  return `<span class="badge ai-processing">&#x2728; AI Analyzing...</span>`;
 }
 
 function renderInspections(items) {
