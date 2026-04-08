@@ -341,7 +341,7 @@ async function loadInspections() {
       wrapper.classList.remove('hidden');
       renderInspections(data.items);
       data.items
-        .filter(i => !i.is_ai_processed && i.notes)
+        .filter(i => !i.is_ai_processed)
         .forEach(i => startAiPoller(i.id));
     }
     renderPagination(data.total);
