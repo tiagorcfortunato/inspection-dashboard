@@ -308,6 +308,14 @@ async function loadInspections() {
   }
 }
 
+function renderAiBadge(item) {
+  if (item.is_ai_processed) {
+    const rationale = item.ai_rationale ? escapeHtml(item.ai_rationale) : 'AI classification complete';
+    return `<span class="badge ai-verified" title="${rationale}">&#x2705; AI Verified</span>`;
+  }
+  return `<span class="badge ai-processing" title="AI classification in progress">&#x2728; AI Analyzing...</span>`;
+}
+
 function renderInspections(items) {
   const tbody = document.getElementById('inspections-tbody');
   tbody.innerHTML = items.map(item => `
@@ -317,6 +325,7 @@ function renderInspections(items) {
       <td class="hide-mobile">${formatDamageType(item.damage_type)}</td>
       <td><span class="badge severity-${item.severity}">${capitalize(item.severity)}</span></td>
       <td><span class="badge status-${item.status}">${capitalize(item.status)}</span></td>
+      <td class="hide-mobile">${renderAiBadge(item)}</td>
       <td class="hide-tablet">${formatDate(item.reported_at)}</td>
       <td class="hide-tablet admin-col ${isAdmin() ? '' : 'hidden'}">${item.user_email ? escapeHtml(item.user_email) : '-'}</td>
       <td class="td-actions">
