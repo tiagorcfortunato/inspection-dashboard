@@ -202,6 +202,14 @@
             </select>
           </div>
         </div>
+        <div class="form-group">
+          <label for="field-image">Photo <span class="label-optional">(optional — AI will classify from image)</span></label>
+          <input type="file" id="field-image" accept="image/*" onchange="previewImage(event)" />
+          <div id="image-preview-wrap" class="image-preview-wrap hidden">
+            <img id="image-preview" class="image-preview" alt="preview" />
+            <button type="button" class="btn-remove-image" onclick="removeImage()">Remove</button>
+          </div>
+        </div>
         <div class="form-group" id="notes-group">
           <label for="field-notes">Notes <span id="notes-label-hint" class="label-optional">(optional)</span></label>
           <textarea id="field-notes" rows="3" placeholder="Additional observations..."></textarea>

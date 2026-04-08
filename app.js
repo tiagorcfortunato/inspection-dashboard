@@ -368,7 +368,10 @@ function renderInspections(items) {
   tbody.innerHTML = items.map(item => `
     <tr>
       <td class="td-id">#${item.id}</td>
-      <td class="td-location">${escapeHtml(item.location_code)}</td>
+      <td class="td-location">
+        ${item.image_data ? `<img src="data:image/jpeg;base64,${item.image_data}" class="row-thumbnail" alt="damage photo" />` : ''}
+        ${escapeHtml(item.location_code)}
+      </td>
       <td class="hide-mobile">${formatDamageType(item.damage_type)}</td>
       <td><span class="badge severity-${item.severity}">${capitalize(item.severity)}</span></td>
       <td><span class="badge status-${item.status}">${capitalize(item.status)}</span></td>
@@ -414,10 +417,42 @@ function openCreateModal() {
   document.getElementById('field-damage').value         = 'pothole';
   document.getElementById('field-severity').value       = 'low';
   document.getElementById('field-notes').value          = '';
+  document.getElementById('field-image').value          = '';
+  document.getElementById('image-preview-wrap').classList.add('hidden');
   document.getElementById('status-group').classList.add('hidden');
   document.getElementById('form-error').classList.add('hidden');
   document.getElementById('modal-overlay').classList.remove('hidden');
   document.getElementById('field-location').focus();
+}
+
+function previewImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('image-preview').src = ev.target.result;
+    document.getElementById('image-preview-wrap').classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage() {
+  document.getElementById('field-image').value = '';
+  document.getElementById('image-preview-wrap').classList.add('hidden');
+}
+
+async function getImageBase64() {
+  const file = document.getElementById('field-image').files[0];
+  if (!file) return null;
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      // Strip the data:image/...;base64, prefix — send raw base64 only
+      const base64 = e.target.result.split(',')[1];
+      resolve(base64);
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 function openEditModal(id) {
@@ -461,11 +496,14 @@ async function handleSubmit(e) {
   btn.disabled    = true;
   btn.textContent = editMode ? 'Saving...' : 'Creating...';
 
+  const imageData = editMode ? null : await getImageBase64();
+
   const payload = {
     location_code: document.getElementById('field-location').value.trim(),
     damage_type:   document.getElementById('field-damage').value,
     severity:      document.getElementById('field-severity').value,
     notes:         document.getElementById('field-notes').value.trim() || null,
+    image_data:    imageData,
   };
 
   try {
