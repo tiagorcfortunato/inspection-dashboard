@@ -482,6 +482,22 @@ tbody tr:hover td { background: #f8fafc; }
   font-style: italic;
 }
 
+.ai-overridden {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.ai-override-warning {
+  background: #fffbeb;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  color: #92400e;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
 @keyframes ai-pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.6; }

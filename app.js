@@ -3,6 +3,7 @@ const LIMIT = 10;
 
 let currentOffset = 0;
 let editMode = false;
+let currentEditItem = null;
 let inspectionsCache = [];
 let coldStartTimer = null;
 const activePollers = {};
@@ -354,6 +355,14 @@ async function loadInspections() {
 function renderAiBadge(item) {
   if (item.is_ai_processed) {
     const rationale = item.ai_rationale ? escapeHtml(item.ai_rationale) : '';
+    if (item.is_ai_overridden) {
+      return `
+        <div class="ai-verified-block">
+          <span class="badge ai-overridden">&#x26A0;&#xFE0F; AI Overridden</span>
+          <p class="ai-rationale-text">AI classified as <strong>${formatDamageType(item.ai_damage_type)} / ${capitalize(item.ai_severity)}</strong></p>
+          ${rationale ? `<p class="ai-rationale-text">${rationale}</p>` : ''}
+        </div>`;
+    }
     return `
       <div class="ai-verified-block">
         <span class="badge ai-verified">&#x2705; AI Verified</span>
@@ -471,6 +480,7 @@ function openEditModal(id) {
   if (!item) return;
 
   editMode = true;
+  currentEditItem = item;
   document.getElementById('modal-title').textContent    = 'Edit Inspection';
   document.getElementById('submit-btn').textContent     = 'Save Changes';
   document.getElementById('inspection-id').value        = item.id;
@@ -482,7 +492,28 @@ function openEditModal(id) {
   document.getElementById('status-group').classList.remove('hidden');
   document.getElementById('form-error').classList.add('hidden');
   document.getElementById('modal-overlay').classList.remove('hidden');
+  updateAiWarning();
   document.getElementById('field-location').focus();
+}
+
+function updateAiWarning() {
+  const el = document.getElementById('ai-override-warning');
+  if (!el) return;
+  if (!currentEditItem || !currentEditItem.is_ai_processed || !currentEditItem.ai_damage_type) {
+    el.classList.add('hidden');
+    return;
+  }
+  const newDamage   = document.getElementById('field-damage').value;
+  const newSeverity = document.getElementById('field-severity').value;
+  const aiDamage    = currentEditItem.ai_damage_type;
+  const aiSeverity  = currentEditItem.ai_severity;
+
+  if (newDamage !== aiDamage || newSeverity !== aiSeverity) {
+    el.innerHTML = `&#x26A0;&#xFE0F; You are overriding AI classification: <strong>${formatDamageType(aiDamage)} / ${capitalize(aiSeverity)}</strong>`;
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
 }
 
 function closeModal() {
@@ -496,6 +527,9 @@ function handleOverlayClick(e) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
 });
+
+document.getElementById('field-damage').addEventListener('change', updateAiWarning);
+document.getElementById('field-severity').addEventListener('change', updateAiWarning);
 
 async function handleSubmit(e) {
   e.preventDefault();
