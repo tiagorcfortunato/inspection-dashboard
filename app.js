@@ -455,23 +455,34 @@ async function getImageBase64() {
   if (!file) return null;
 
   // Compress: resize to max 800px and convert to JPEG at 70% quality
-  return new Promise(resolve => {
+  const MAX_DIMENSION = 800;
+  const JPEG_QUALITY = 0.7;
+
+  return new Promise((resolve, reject) => {
     const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
     img.onload = () => {
-      const MAX = 800;
+      URL.revokeObjectURL(objectUrl);
       let w = img.width, h = img.height;
-      if (w > MAX || h > MAX) {
-        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-        else       { w = Math.round(w * MAX / h); h = MAX; }
+      if (w > MAX_DIMENSION || h > MAX_DIMENSION) {
+        if (w > h) { h = Math.round(h * MAX_DIMENSION / w); w = MAX_DIMENSION; }
+        else       { w = Math.round(w * MAX_DIMENSION / h); h = MAX_DIMENSION; }
       }
       const canvas = document.createElement('canvas');
       canvas.width = w;
       canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      const dataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
       resolve(dataUrl.split(',')[1]);
     };
-    img.src = URL.createObjectURL(file);
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Failed to load image'));
+    };
+
+    img.src = objectUrl;
   });
 }
 
@@ -509,7 +520,7 @@ function updateAiWarning() {
   const aiSeverity  = currentEditItem.ai_severity;
 
   if (newDamage !== aiDamage || newSeverity !== aiSeverity) {
-    el.innerHTML = `&#x26A0;&#xFE0F; You are overriding AI classification: <strong>${formatDamageType(aiDamage)} / ${capitalize(aiSeverity)}</strong>`;
+    el.textContent = `\u26A0\uFE0F You are overriding AI classification: ${formatDamageType(aiDamage)} / ${capitalize(aiSeverity)}`;
     el.classList.remove('hidden');
   } else {
     el.classList.add('hidden');
